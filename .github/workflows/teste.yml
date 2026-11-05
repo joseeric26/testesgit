@@ -1,0 +1,32 @@
+name: Teste de Git
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Verificar repositorio
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Conferir arquivo e commit
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath README.md -PathType Leaf)) {
+            throw 'O arquivo README.md nao foi encontrado.'
+          }
+          if ([string]::IsNullOrWhiteSpace((Get-Content -LiteralPath README.md -Raw))) {
+            throw 'O arquivo README.md esta vazio.'
+          }
+          git log -1 --oneline
+          if ($LASTEXITCODE -ne 0) { throw 'Falha ao consultar o commit.' }
+          git diff --check
+          if ($LASTEXITCODE -ne 0) { throw 'Falha na verificacao de espacos.' }
+          Write-Output 'Teste de Git concluido com sucesso!'
